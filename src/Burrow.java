@@ -4,11 +4,13 @@ import itumulator.world.Location;
 public class Burrow extends Structure implements NonBlocking {
     private int capacity;
     private final Rabbit[] rabbits;
+    private Location location;
 
-    public Burrow(int capacity, int health){
+    public Burrow(int capacity, int health, int x, int y){
         super(health);
         this.capacity = capacity;
         rabbits = new Rabbit[capacity];
+        location = new Location(x, y);
     }
 
     public boolean isFull(){
@@ -20,5 +22,7 @@ public class Burrow extends Structure implements NonBlocking {
         return true;
     }
 
-
+    public Location burrowLocation(){
+        return location;
+    }
 }
