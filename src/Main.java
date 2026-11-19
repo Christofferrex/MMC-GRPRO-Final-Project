@@ -1,22 +1,27 @@
 import java.awt.Color;
-import java.util.Random;
+import java.io.File;
 
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.Program;
-import itumulator.world.Location;
 import itumulator.world.World;
 
 public class Main {
 
     public static void main(String[] args) {
-        int size = 5;
+        InputHandler ir = new InputHandler(new File("resources/data/Tema1/t1-1a.txt"));
+
+        int size = ir.getSize();
         Program p = new Program(size, 800, 75);
-        Random r = new Random();
 
         World w = p.getWorld();
 
-        // w.setTile(new Location(0, 0), new <MyClass>());
+        p.setDisplayInformation(Grass.class, new DisplayInformation(Color.green, "grass"));
+        p.setDisplayInformation(Burrow.class, new DisplayInformation(Color.green, "hole-small"));
+        p.setDisplayInformation(Rabbit.class, new DisplayInformation(Color.green, "rabbit-large"));
 
+        ir.spawnObjects(w);
+
+        // w.setTile(new Location(0, 0), new <MyClass>());
         // p.setDisplayInformation(<MyClass>.class, new DisplayInformation(<Color>, "<ImageName>"));
 
 //        Grass Spawning:
