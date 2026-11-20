@@ -12,6 +12,7 @@ public class Grass extends Structure implements Actor, NonBlocking {
     public Grass(int health) {
         super(health);
         r = new Random();
+        foodType = FoodType.plant;
     }
 
     public static int getMinHealth() { return minHealth; }

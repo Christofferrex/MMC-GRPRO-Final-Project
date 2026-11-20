@@ -9,6 +9,7 @@ public class Animal implements Actor {
     boolean hasEaten = false;
     List<FoodType> foodType;
 
+    //constructor
     Animal(int energy, int health, int age) {
         this.energy = energy;
         this.health = health;
@@ -20,39 +21,33 @@ public class Animal implements Actor {
 
     }
 
-    public void ageUp(World world) {
-        if (world.isNight()) {
-            age++;
-        }
+    //adds age
+    public void ageUp() {
+        age++;
     }
 
+    //removes energy
     public void energyDown() {
-        if (age % 2 == 0) {
-            energy--;
-        }
+        energy--;
     }
 
-    public void eat(World world) {
-        Set<Location> neighbours = world.getSurroundingTiles();
-        for (Location neighbour : neighbours) {
-            if (world.containsNonBlocking(neighbour)) {
-                world.move(this, neighbour);
-            }
-        }
+    //sets hasEaten to true and increases health
+    public void eat() {
+        hasEaten = true;
+        health++;
     }
 
-    public void starve(World world) {
-        if (!hasEaten && world.isNight()) {
-            health--;
-        }
+    //removes health
+    public void starve() {
+        health--;
     }
 
-    public void setHasEaten(World world) {
-        if (hasEaten && world.isNight()) {
-            hasEaten = false;
-        }
+    //sets hasEaten to false
+    public void setHasEaten() {
+        hasEaten = false;
     }
 
+    //random movement
     @Override
     public void act(World world) {
         Set<Location> neighbours = world.getEmptySurroundingTiles();
