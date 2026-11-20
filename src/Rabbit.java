@@ -107,6 +107,15 @@ public class Rabbit extends Animal {
             }
         }
 
+        if (inBurrow) {
+            Burrow currentBurrow = (Burrow) world.getTile(rabbitLocation);
+            if (!currentBurrow.isFull()  && currentBurrow.rabbitAmount() >= 2) {
+                Rabbit baby = this.createOffspring();
+                world.add(baby);
+                currentBurrow.rabbitEntering(baby);
+            }
+        }
+
     }
 
     //code to check if the rabbit can dig a burrow, then it digs one
@@ -140,5 +149,10 @@ public class Rabbit extends Animal {
     //get the rabbits health
     public int getHealth() {
         return health;
+    }
+
+    @Override
+    public Rabbit createOffspring() {
+        return new Rabbit(3,3,0);
     }
 }

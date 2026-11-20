@@ -2,7 +2,7 @@ import itumulator.simulator.*;
 import itumulator.world.*;
 import java.util.*;
 
-public class Animal implements Actor {
+public abstract class Animal implements Actor {
     int energy;
     int health;
     int age;
@@ -17,9 +17,7 @@ public class Animal implements Actor {
         foodType = new ArrayList<>();
     }
 
-    public void breed() {
-
-    }
+    public abstract Object createOffspring();
 
     //adds age
     public void ageUp() {

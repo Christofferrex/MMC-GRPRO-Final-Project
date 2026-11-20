@@ -1,6 +1,8 @@
 import itumulator.world.NonBlocking;
 import itumulator.world.Location;
 
+import java.lang.reflect.Array;
+
 public class Burrow extends Structure implements NonBlocking {
     private int capacity;
     private final Rabbit[] rabbits;
@@ -43,5 +45,9 @@ public class Burrow extends Structure implements NonBlocking {
 
     public Location burrowLocation(){
         return location;
+    }
+
+    public int rabbitAmount() {
+        return rabbits.length;
     }
 }
