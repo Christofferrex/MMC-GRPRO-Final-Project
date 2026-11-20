@@ -6,6 +6,7 @@ public class Animal implements Actor {
     int energy;
     int health;
     int age;
+    boolean hasEaten = false;
     List<FoodType> foodType;
 
     Animal(int energy, int health, int age) {
@@ -35,8 +36,20 @@ public class Animal implements Actor {
         Set<Location> neighbours = world.getSurroundingTiles();
         for (Location neighbour : neighbours) {
             if (world.containsNonBlocking(neighbour)) {
-
+                world.move(this, neighbour);
             }
+        }
+    }
+
+    public void starve(World world) {
+        if (!hasEaten && world.isNight()) {
+            health--;
+        }
+    }
+
+    public void setHasEaten(World world) {
+        if (hasEaten && world.isNight()) {
+            hasEaten = false;
         }
     }
 
