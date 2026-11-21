@@ -6,6 +6,7 @@ public class Rabbit extends Animal {
     Location burrowLocation;
     Location rabbitLocation;
     boolean inBurrow = false;
+    Burrow burrow;
 
     Rabbit(int energy, int health, int age) {
         super(energy, health, age);
@@ -48,17 +49,58 @@ public class Rabbit extends Animal {
                     Location direction = new Location(rabbitLocation.getX() + xMovement, rabbitLocation.getY() + yMovement);
 
                     if (world.getTile(direction) != null) {
-                        Set<Location> nearby = world.getSurroundingTiles(direction);
-                        List<Location> li = new ArrayList<>(nearby);
+                        Set<Location> nearbyBlocker = world.getSurroundingTiles(direction);
+                        Set<Location> nearbyRabbit = world.getSurroundingTiles(rabbitLocation);
+                        Set<Location> intersection = new HashSet<>(nearbyBlocker);
+                        intersection.retainAll(nearbyRabbit);
 
-                        for (Location tile : li) {
-                            if (world.getTile(tile) != null) {
-
+                        for (Location tile : intersection) {
+                            if (world.getTile(tile) == null) {
+                                world.move(this,tile);
+                                break;
                             }
                         }
                     }
                     world.move(this, direction);
                 }
+            }
+
+            if (burrowLocation == null && world.contains(burrow)) {
+                Location bLocation = world.getLocation(burrow);
+                for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
+                    rabbitLocation = world.getLocation(this);
+                    int xDiff = bLocation.getX() - rabbitLocation.getX();
+                    int yDiff = bLocation.getY() - rabbitLocation.getY();
+                    int xMovement = 0;
+                    int yMovement = 0;
+
+                    if (xDiff != 0) {
+                        xMovement = xDiff < 0 ? -1 : 1;
+                    }
+
+                    if (yDiff != 0) {
+                        yMovement = yDiff < 0 ? -1 : 1;
+                    }
+
+                    Location direction = new Location(rabbitLocation.getX() + xMovement, rabbitLocation.getY() + yMovement);
+
+                    if (world.getTile(direction) != null) {
+                        Set<Location> nearbyBlocker = world.getSurroundingTiles(direction);
+                        Set<Location> nearbyRabbit = world.getSurroundingTiles(rabbitLocation);
+                        Set<Location> intersection = new HashSet<>(nearbyBlocker);
+                        intersection.retainAll(nearbyRabbit);
+
+                        for (Location tile : intersection) {
+                            if (world.getTile(tile) == null) {
+                                world.move(this, tile);
+                                break;
+                            }
+                        }
+                    }
+                    world.move(this, direction);
+                }
+            } else if (burrowLocation == null) {
+                this.digBurrow(world);
             }
         }
 
@@ -85,11 +127,6 @@ public class Rabbit extends Animal {
         //adds age to the rabbit every night
         if (world.isNight()) {
             this.ageUp();
-        }
-
-        //removes energy from the rabbit for every 2 times it ages
-        if (this.age % 2 == 0) {
-            this.energyDown();
         }
 
         //make the rabbit eat
@@ -122,7 +159,7 @@ public class Rabbit extends Animal {
     public void digBurrow(World world) {
         Location currentLocation = world.getLocation(this);
         if (world.containsNonBlocking(currentLocation)) {
-            Burrow burrow = new Burrow(3, 3, currentLocation.getX(), currentLocation.getY());
+            burrow = new Burrow(3, 3, currentLocation.getX(), currentLocation.getY());
             world.add(burrow);
             world.setTile(currentLocation, burrow);
             burrowLocation = world.getLocation(burrow);
@@ -139,6 +176,7 @@ public class Rabbit extends Animal {
     public void leaveBurrow(World world) {
         Location currentLocation = world.getLocation(this);
         world.setTile(currentLocation, this);
+        inBurrow = false;
     }
 
     //get the rabbits max energy

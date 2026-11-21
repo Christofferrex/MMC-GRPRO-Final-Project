@@ -17,11 +17,15 @@ public abstract class Animal implements Actor {
         foodType = new ArrayList<>();
     }
 
+    //abstract method for breeding
     public abstract Object createOffspring();
 
     //adds age
     public void ageUp() {
         age++;
+        if (this.age % 2 == 0) {
+            this.energyDown();
+        }
     }
 
     //removes energy
