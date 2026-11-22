@@ -6,7 +6,7 @@ import itumulator.world.World;
 import java.util.*;
 
 public class Grass extends Structure implements Actor, NonBlocking {
-    private final static int minHealth = 1, maxHealth = 3;
+    private final static int minHealth = 2, maxHealth = 3;
     private final Random r;
 
     public Grass(int health) {
