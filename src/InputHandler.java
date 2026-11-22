@@ -45,7 +45,7 @@ public class InputHandler {
 
                 spawnedObject = switch (keyValuePair[0]) {
                     case "grass" -> new Grass(r.nextInt(Grass.getMinHealth(), Grass.getMaxHealth()));
-                    case "rabbit" -> new Rabbit(120, 3, 0, false);
+                    case "rabbit" -> new Rabbit(5, 3, 0, false, null);
                     case "burrow" -> new Burrow(5, 3, location.getX(), location.getY());
                     default -> null;
                 };

@@ -21,7 +21,7 @@ public class Grass extends Structure implements Actor, NonBlocking {
 
     @Override
     public void act(World world) {
-        if (r.nextDouble() > 0.01) return;
+        if (r.nextDouble() > 0.025) return;
 
         List<Location> surroundingTiles = new ArrayList<>(world.getSurroundingTiles());
         List<Location> validLocations = new ArrayList<>();
