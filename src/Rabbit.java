@@ -65,7 +65,7 @@ public class Rabbit extends Animal {
                 }
             }
 
-            if (burrowLocation == null && world.contains(burrow)) {
+            if (burrowLocation == null && burrow != null && world.contains(burrow)) {
                 Location bLocation = world.getLocation(burrow);
                 for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
                     rabbitLocation = world.getLocation(this);
@@ -158,7 +158,7 @@ public class Rabbit extends Animal {
     //code to check if the rabbit can dig a burrow, then it digs one
     public void digBurrow(World world) {
         Location currentLocation = world.getLocation(this);
-        if (world.containsNonBlocking(currentLocation)) {
+        if (!world.containsNonBlocking(currentLocation)) {
             burrow = new Burrow(3, 3, currentLocation.getX(), currentLocation.getY());
             world.add(burrow);
             world.setTile(currentLocation, burrow);
