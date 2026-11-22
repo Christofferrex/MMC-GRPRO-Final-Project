@@ -48,6 +48,12 @@ public class Burrow extends Structure implements NonBlocking {
     }
 
     public int rabbitAmount() {
-        return rabbits.length;
+        int amount = 0;
+        for(int i = 0; i < rabbits.length; i++){
+            if(rabbits[i] != null){
+                amount++;
+            }
+        }
+        return amount;
     }
 }
