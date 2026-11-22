@@ -10,9 +10,7 @@ public class Main {
     public static void main(String[] args) {
         InputHandler ir = new InputHandler(new File("resources/data/Tema1/t1-2cde.txt"));
 
-        int size = ir.getSize();
-        Program p = new Program(size, 800, 75);
-
+        Program p = new Program(ir.getWorldSize(), 800, 75);
         World w = p.getWorld();
 
         p.setDisplayInformation(Grass.class, new DisplayInformation(Color.green, "grass"));

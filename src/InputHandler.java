@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class InputHandler {
-    private final int size;
+    private final int worldSize;
     private final Scanner scanner;
     Random r;
 
@@ -20,7 +20,7 @@ public class InputHandler {
             throw new RuntimeException(e);
         }
 
-        this.size = scanner.nextInt();
+        this.worldSize = scanner.nextInt();
         scanner.nextLine();
     }
 
@@ -59,7 +59,7 @@ public class InputHandler {
         Location location = new Location(-1, -1);
         int attempts = 0;
         while (location.getX() == -1) {
-            Location randomLocation = new Location(r.nextInt(0, size), r.nextInt(0, size));
+            Location randomLocation = new Location(r.nextInt(0, worldSize), r.nextInt(0, worldSize));
             if (!w.containsNonBlocking(randomLocation) && w.isTileEmpty(randomLocation)) {
                 location = randomLocation;
             }
@@ -70,7 +70,7 @@ public class InputHandler {
         return location;
     }
 
-    public int getSize() {
-        return size;
+    public int getWorldSize() {
+        return worldSize;
     }
 }

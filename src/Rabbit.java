@@ -20,13 +20,17 @@ public class Rabbit extends Animal {
         Random r;
         Location l;
         rabbitLocation = world.getLocation(this);
-        for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
-            neighbours = world.getEmptySurroundingTiles();
-            list = new ArrayList<>(neighbours);
-            r = new Random();
-            l = list.get(r.nextInt(0,list.size()));
-            world.move(this, l);
+        if (world.isDay()) {
+            for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
+                neighbours = world.getEmptySurroundingTiles();
+                list = new ArrayList<>(neighbours);
+                r = new Random();
+                l = list.get(r.nextInt(0, list.size()));
+                world.move(this, l);
+            }
         }
+
+
 
         //rabbits movement towards burrow at night
         if (world.isNight()) {
@@ -56,16 +60,14 @@ public class Rabbit extends Animal {
 
                         for (Location tile : intersection) {
                             if (world.getTile(tile) == null) {
-                                world.move(this,tile);
+                                direction = tile;
                                 break;
                             }
                         }
                     }
                     world.move(this, direction);
                 }
-            }
-
-            if (burrowLocation == null && burrow != null && world.contains(burrow)) {
+            } else if (burrowLocation == null && burrow != null && world.contains(burrow)) {
                 Location bLocation = world.getLocation(burrow);
                 for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
                     rabbitLocation = world.getLocation(this);
@@ -131,12 +133,12 @@ public class Rabbit extends Animal {
 
         //make the rabbit eat
         for (Location neighbour : neighbours) {
-            if (world.containsNonBlocking(neighbour) && !hasEaten) {
+            if (world.containsNonBlocking(neighbour) && !this.hasEaten && world.isDay()) {
                 world.move(this, neighbour);
                 if (world.getTile(neighbour) instanceof Structure) {
                     Structure structure = (Structure) world.getTile(neighbour);
                     if (foodType.contains(structure.getFoodType())) {
-                        structure.damageStructure(1);
+                        structure.damageStructure(1, world);
                         this.eat();
                         break;
                     }
@@ -154,6 +156,8 @@ public class Rabbit extends Animal {
         }
 
     }
+
+
 
     //code to check if the rabbit can dig a burrow, then it digs one
     public void digBurrow(World world) {
