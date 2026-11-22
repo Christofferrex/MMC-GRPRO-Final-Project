@@ -18,8 +18,9 @@ public class Rabbit extends Animal {
         Set<Location> neighbours;
         Location rabbitLocation = world.isOnTile(this) ? world.getLocation(this) :  burrow.burrowLocation();
 
-        if (health <= 0) {
+        if (health <= 0 || energy <= 0) {
             world.delete(this);
+            if (burrow != null) burrow.removeDenizen(this);
         }
 
         if (world.isDay()) {
@@ -27,7 +28,12 @@ public class Rabbit extends Animal {
             if (inBurrow) {
                 this.leaveBurrow(world);
                 if (inBurrow) return;
+                if (!burrow.isDenizen(this)) {
+                    burrow = null;
+                }
             }
+
+            if (!world.contains(this)) return;
 
             for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
                 neighbours = world.getEmptySurroundingTiles();
@@ -36,7 +42,7 @@ public class Rabbit extends Animal {
                 //make the rabbit eat
                 if (!this.hasEaten) {
                     for (Location neighbour : neighbours) {
-                        if (world.containsNonBlocking(neighbour)) {
+                        if (world.containsNonBlocking(neighbour) && world.getTile(neighbour) instanceof NonBlocking) {
                             world.move(this, neighbour);
                             if (world.getNonBlocking(neighbour) instanceof Structure structure && foodType.contains(structure.getFoodType())) {
                                 structure.damageStructure(1, world);
@@ -50,7 +56,7 @@ public class Rabbit extends Animal {
 
                 if (!ate) {
                     List<Location> listOfNeighbours = new ArrayList<>(neighbours);
-                    if (listOfNeighbours.size() > 0) {
+                    if (!listOfNeighbours.isEmpty() && world.contains(this)) {
                         world.move(this, listOfNeighbours.get(r.nextInt(0, listOfNeighbours.size())));
                     }
                 }
@@ -99,7 +105,7 @@ public class Rabbit extends Animal {
             } else if (burrow == null) {
                 Set<Location> surroundingTiles = world.getSurroundingTiles(3);
                 for (Location location : surroundingTiles) {
-                    if (world.getNonBlocking(location) instanceof Burrow foundBurrow) {
+                    if (world.getNonBlocking(location) instanceof Burrow foundBurrow && !foundBurrow.atFullCapacity()) {
                         burrow = foundBurrow;
                         break;
                     }
@@ -113,9 +119,9 @@ public class Rabbit extends Animal {
                 this.enterBurrow(world);
             } else if (inBurrow) {
                 if (!burrow.isFull() && burrow.rabbitAmount() >= 2) {
-                    System.out.println("WE FUCKING FUCKED!!!");
                     Rabbit baby = this.createOffspring();
                     world.add(baby);
+                    burrow.addDenizen(baby);
                     burrow.rabbitEntering(baby);
                 }
             }
@@ -125,8 +131,11 @@ public class Rabbit extends Animal {
     //code to check if the rabbit can dig a burrow, then it digs one
     public void digBurrow(World world) {
         Location currentLocation = world.getLocation(this);
-        if (!world.containsNonBlocking(currentLocation)) {
+        Object potentialObstacle = world.getNonBlocking(currentLocation);
+        if (!(potentialObstacle instanceof Burrow)) {
             burrow = new Burrow(3, 3, currentLocation.getX(), currentLocation.getY());
+            burrow.addDenizen(this);
+            if (potentialObstacle != null) world.delete(potentialObstacle);
             world.add(burrow);
             world.setTile(currentLocation, burrow);
         }
@@ -145,13 +154,14 @@ public class Rabbit extends Animal {
 
     //code for when the rabbit leaves a burrow
     public void leaveBurrow(World world) {
+        this.ageUp();
+        this.setHasEaten();
+
         if (world.getTile(burrow.burrowLocation()) != burrow) return;
         world.setTile(burrow.burrowLocation(), this);
         world.setCurrentLocation(burrow.burrowLocation());
-        this.ageUp();
         inBurrow = false;
         burrow.rabbitLeaving(this);
-        this.setHasEaten();
     }
 
     //get the rabbits max energy
