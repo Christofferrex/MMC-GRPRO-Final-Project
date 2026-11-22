@@ -3,11 +3,12 @@ import itumulator.world.*;
 import java.util.*;
 
 public abstract class Animal implements Actor {
-    int energy;
-    int health;
-    int age;
-    boolean hasEaten = false;
-    List<FoodType> foodType;
+    protected int energy;
+    protected int health;
+    protected int age;
+    protected boolean hasEaten = false;
+    protected List<FoodType> foodType;
+    protected final Random r;
 
     //constructor
     Animal(int energy, int health, int age) {
@@ -15,6 +16,7 @@ public abstract class Animal implements Actor {
         this.health = health;
         this.age = age;
         foodType = new ArrayList<>();
+        r = new Random();
     }
 
     //abstract method for breeding
@@ -52,15 +54,9 @@ public abstract class Animal implements Actor {
     //random movement
     @Override
     public void act(World world) {
-        Set<Location> neighbours = world.getEmptySurroundingTiles();
-        List<Location> list;
-        Random r;
-        Location l;
-        for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--)
-            neighbours = world.getEmptySurroundingTiles();
-            list = new ArrayList<>(neighbours);
-            r = new Random();
-            l = list.get(r.nextInt(0,list.size()));
-            world.move(this, l);
+        for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
+            List<Location> list = new ArrayList<>(world.getEmptySurroundingTiles());
+            world.move(this, list.get(r.nextInt(0, list.size())));
+        }
     }
 }
