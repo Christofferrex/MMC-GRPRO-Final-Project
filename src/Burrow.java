@@ -76,5 +76,5 @@ public class Burrow extends Structure implements NonBlocking {
             }
         }
         return amount;
-    } //penor
+    }
 }
