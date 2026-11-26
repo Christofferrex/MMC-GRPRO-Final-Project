@@ -47,6 +47,7 @@ public class InputHandler {
                     case "grass" -> new Grass(r.nextInt(Grass.getMinHealth(), Grass.getMaxHealth()));
                     case "rabbit" -> new Rabbit(5, 3, 0, false, null);
                     case "burrow" -> new Burrow(5, 3, location.getX(), location.getY());
+                    case "berrybush" -> new BerryBush(1);
                     default -> null;
                 };
 
