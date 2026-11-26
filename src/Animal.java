@@ -59,4 +59,7 @@ public abstract class Animal implements Actor {
             world.move(this, list.get(r.nextInt(0, list.size())));
         }
     }
+
+    //taking damage from other animals
+    public void takeDamage(int damage){health -= damage;}
 }
