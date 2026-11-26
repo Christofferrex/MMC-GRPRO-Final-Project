@@ -5,6 +5,8 @@ import itumulator.world.*;
 public class Rabbit extends Animal {
     private boolean inBurrow;
     private Burrow burrow;
+    private int timeInWorld;
+    boolean newDay = false;
 
     Rabbit(int energy, int health, int age, boolean inBurrow, Burrow burrow) {
         super(energy, health, age);
@@ -16,11 +18,23 @@ public class Rabbit extends Animal {
     public void act(World world) {
         //rabbits random movement
         Set<Location> neighbours;
-        Location rabbitLocation = world.isOnTile(this) ? world.getLocation(this) :  burrow.burrowLocation();
+        Location rabbitLocation = world.isOnTile(this) ? world.getLocation(this) : burrow.burrowLocation();
+
+        if (timeInWorld % 20 == 0 && !newDay) {
+            if (!this.hasEaten) {
+                this.starve();
+            }
+            this.ageUp();
+            this.setHasEaten();
+            newDay = true;
+        }
 
         if (health <= 0 || energy <= 0) {
             world.delete(this);
             if (burrow != null) burrow.removeDenizen(this);
+            Carcass rabbitCarcass = new Carcass(3, false);
+            world.add(rabbitCarcass);
+            world.setTile(rabbitLocation, rabbitCarcass);
         }
 
         if (world.isDay()) {
@@ -74,11 +88,11 @@ public class Rabbit extends Animal {
                 int yMovement = 0;
 
                 if (xDiff != 0) {
-                    xMovement = xDiff < 0 ? -1: 1;
+                    xMovement = xDiff < 0 ? -1 : 1;
                 }
 
                 if (yDiff != 0) {
-                    yMovement = yDiff < 0 ? -1: 1;
+                    yMovement = yDiff < 0 ? -1 : 1;
                 }
 
                 Location direction = new Location(rabbitLocation.getX() + xMovement, rabbitLocation.getY() + yMovement);
@@ -176,6 +190,6 @@ public class Rabbit extends Animal {
 
     @Override
     public Rabbit createOffspring() {
-        return new Rabbit(5,3,0, true, burrow);
+        return new Rabbit(5, 3, 0, true, burrow);
     }
 }

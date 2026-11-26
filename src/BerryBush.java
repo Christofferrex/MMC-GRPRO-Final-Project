@@ -7,7 +7,6 @@ import java.awt.*;
 import java.util.Random;
 
 public class BerryBush extends Structure implements Actor, DynamicDisplayInformationProvider {
-    private final int health = 1;
     private boolean berriesAvailable;
     private final Random r;
 

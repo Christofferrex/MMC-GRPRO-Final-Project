@@ -48,6 +48,8 @@ public class InputHandler {
                     case "rabbit" -> new Rabbit(5, 3, 0, false, null);
                     case "burrow" -> new Burrow(5, 3, location.getX(), location.getY());
                     case "berrybush" -> new BerryBush(1);
+                    case "carcass" -> new Carcass(3,false);
+                    case "largeCarcass" -> new Carcass(6, true);
                     default -> null;
                 };
 

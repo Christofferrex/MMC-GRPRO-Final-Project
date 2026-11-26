@@ -2,3 +2,5 @@
 grass 3-10
 rabbit 2-4
 berrybush 3
+carcass 1
+largeCarcass 1
