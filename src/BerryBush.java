@@ -38,4 +38,8 @@ public class BerryBush extends Structure implements Actor, DynamicDisplayInforma
     public void setBerriesAvailable() {
         berriesAvailable = false;
     }
+
+    public boolean isBerriesAvailable(){
+        return berriesAvailable;
+    }
 }
