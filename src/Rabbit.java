@@ -1,11 +1,9 @@
 import java.awt.*;
-import java.sql.Array;
 import java.util.*;
 import java.util.List;
 
 import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
-import itumulator.simulator.*;
 import itumulator.world.*;
 
 public class Rabbit extends Animal implements DynamicDisplayInformationProvider {
@@ -27,12 +25,12 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     public void onAnimalDeath(World world) {
         if (burrow != null) {
             burrow.removeDenizen(this);
-            burrow.rabbitLeaving(this);
+            burrow.animalLeaving(this);
         }
     }
 
     public Location getLocation(World world) {
-        return !inBurrow && world.contains(this) ? world.getLocation(this) : burrow.burrowLocation();
+        return !inBurrow && world.contains(this) ? world.getLocation(this) : burrow.denLocation();
     }
 
     public void act(World world) {
@@ -72,11 +70,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
 
     private void nightLogic(World world) {
         if (!inBurrow && burrow != null) { //Pathfind towards Burrow
-            Location direction = pathfindToBurrow(world);
-            Object potentialObstacle = world.getTile(direction);
-            if (potentialObstacle == null || potentialObstacle instanceof NonBlocking) {
-                world.move(this, direction);
-            }
+            moveTowards(world, burrow.denLocation());
         } else if (burrow == null) { //Find or create Burrow
             searchForAndJoinBurrow(world, 3);
             if (burrow == null) this.digBurrow(world);
@@ -96,7 +90,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
                 Rabbit baby = this.createOffspring();
                 world.add(baby);
                 burrow.addDenizen(baby);
-                burrow.rabbitEntering(baby);
+                burrow.animalEntering(baby);
             }
         }
     }
@@ -115,47 +109,6 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         return false;
     }
 
-    private Location pathfindToBurrow(World world) {
-        Location rabbitLocation = getLocation(world);
-        Location burrowLocation = burrow.burrowLocation();
-        int xDiff = burrowLocation.getX() - rabbitLocation.getX();
-        int yDiff = burrowLocation.getY() - rabbitLocation.getY();
-        int xMovement = 0;
-        int yMovement = 0;
-
-        if (xDiff != 0) {
-            xMovement = xDiff < 0 ? -1 : 1;
-        }
-
-        if (yDiff != 0) {
-            yMovement = yDiff < 0 ? -1 : 1;
-        }
-
-        Location direction = new Location(rabbitLocation.getX() + xMovement, rabbitLocation.getY() + yMovement);
-
-        Object obstacle = world.getTile(direction);
-        if (obstacle != null && !(obstacle instanceof NonBlocking)) {
-            Set<Location> nearbyBlocker = world.getSurroundingTiles(direction);
-            Set<Location> nearbyRabbit = world.getSurroundingTiles(rabbitLocation);
-            Set<Location> intersection = new HashSet<>(nearbyBlocker);
-            intersection.retainAll(nearbyRabbit);
-
-            List<Location> intersectionList = new ArrayList<>(intersection);
-
-            int loopAmount = intersectionList.size();
-            for (int i = 0; i < loopAmount; i++) {
-                Location location = intersectionList.get(r.nextInt(0, intersectionList.size()));
-                obstacle = world.getTile(location);
-                if (obstacle == null || obstacle instanceof NonBlocking) {
-                    return location;
-                }
-                intersectionList.remove(location);
-            }
-        }
-
-        return direction;
-    }
-
     public void searchForAndJoinBurrow(World world, int searchRadius) {
         Set<Location> surroundingTiles = world.getSurroundingTiles(searchRadius);
         for (Location location : surroundingTiles) {
@@ -172,7 +125,7 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         Location currentLocation = world.getLocation(this);
         Object potentialObstacle = world.getNonBlocking(currentLocation);
         if (!(potentialObstacle instanceof Burrow)) {
-            burrow = new Burrow(3, 3, currentLocation.getX(), currentLocation.getY());
+            burrow = new Burrow(3, 3, new Location(currentLocation.getX(), currentLocation.getY()));
             burrow.addDenizen(this);
             if (potentialObstacle != null) world.delete(potentialObstacle);
             world.add(burrow);
@@ -184,18 +137,18 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
     public void enterBurrow(World world) {
         world.remove(this);
         inBurrow = true;
-        burrow.rabbitEntering(this);
+        burrow.animalEntering(this);
     }
 
     //code for when the rabbit leaves a burrow
     public void leaveBurrow(World world) {
-        List<Location> emptySurroundings = new ArrayList<>(world.getEmptySurroundingTiles(burrow.burrowLocation()));
+        List<Location> emptySurroundings = new ArrayList<>(world.getEmptySurroundingTiles(burrow.denLocation()));
         if (emptySurroundings.isEmpty()) return;
         Location targetLocation = emptySurroundings.get(r.nextInt(0, emptySurroundings.size()));
         world.setTile(targetLocation, this);
         world.setCurrentLocation(targetLocation);
         inBurrow = false;
-        burrow.rabbitLeaving(this);
+        burrow.animalLeaving(this);
     }
 
     //get the rabbits max energy
