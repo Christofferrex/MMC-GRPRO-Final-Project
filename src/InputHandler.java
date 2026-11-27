@@ -65,7 +65,7 @@ public class InputHandler {
 
                 if (spawnedObject instanceof Wolf) cachedWolfPack.add((Wolf)spawnedObject);
 
-                w.setTile(location, spawnedObject);
+                w.setTile(territoryCenter == null ? location : territoryCenter, spawnedObject);
             }
 
             for (Wolf wolf : cachedWolfPack) {

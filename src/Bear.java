@@ -4,6 +4,7 @@ import itumulator.executable.DisplayInformation;
 import itumulator.executable.DynamicDisplayInformationProvider;
 
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 
 public class Bear extends Animal implements DynamicDisplayInformationProvider{
@@ -22,7 +23,7 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
     }
 
     public Set<Location> territory(World world){
-        Set<Location> area = world.getSurroundingTiles(territoryCenter, 3);
+        Set<Location> area = world.getSurroundingTiles(territoryCenter, world.getSize()/4);
         area.add(territoryCenter);
         return area;
     }
@@ -46,7 +47,13 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
 
     @Override
     protected void randomMovement(World world){
-
+        Set<Location> neighbours = world.getEmptySurroundingTiles(getLocation(world));
+        Set<Location> roaming = territory(world);
+        neighbours.retainAll(roaming);
+        List<Location> listOfNeighbours = new ArrayList<>(neighbours);
+        if(!listOfNeighbours.isEmpty() && world.contains(this)){
+            world.move(this, listOfNeighbours.get(r.nextInt(0, listOfNeighbours.size())));
+        }
     }
 
     public boolean findAndEatFood(World world, Set<Location> neighbours){
@@ -64,8 +71,10 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
         return false;
     }
 
-    public void attack(Animal prey){
-        prey.takeDamage(strength);
+    public void attack(){
+        //prey.takeDamage(strength);
+        //for()
+        //if(nearbyAnimal instanceof Animal prey && prey != this);
     }
 
     public void isSleeping(World world){
