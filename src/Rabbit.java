@@ -6,7 +6,6 @@ public class Rabbit extends Animal {
     private boolean inBurrow;
     private Burrow burrow;
     private int timeInWorld;
-    boolean newDay = false;
 
     Rabbit(int energy, int health, int age, boolean inBurrow, Burrow burrow) {
         super(energy, health, age);
@@ -16,17 +15,17 @@ public class Rabbit extends Animal {
     }
 
     public void act(World world) {
-        //rabbits random movement
+        //rabbits random movementS
         Set<Location> neighbours;
         Location rabbitLocation = world.isOnTile(this) ? world.getLocation(this) : burrow.burrowLocation();
+        timeInWorld++;
 
-        if (timeInWorld % 20 == 0 && !newDay) {
+        if (timeInWorld % 20 == 0) {
             if (!this.hasEaten) {
                 this.starve();
             }
             this.ageUp();
             this.setHasEaten();
-            newDay = true;
         }
 
         if (health <= 0 || energy <= 0) {
@@ -160,17 +159,10 @@ public class Rabbit extends Animal {
         world.remove(this);
         inBurrow = true;
         burrow.rabbitEntering(this);
-
-        if (!this.hasEaten) {
-            starve();
-        }
     }
 
     //code for when the rabbit leaves a burrow
     public void leaveBurrow(World world) {
-        this.ageUp();
-        this.setHasEaten();
-
         if (world.getTile(burrow.burrowLocation()) != burrow) return;
         world.setTile(burrow.burrowLocation(), this);
         world.setCurrentLocation(burrow.burrowLocation());
