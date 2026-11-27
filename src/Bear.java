@@ -9,14 +9,16 @@ import java.awt.*;
 public class Bear extends Animal implements DynamicDisplayInformationProvider{
     private int strength;
     private Location territoryCenter;
+    private boolean sleeping;
 
-    Bear(int energy, int health, int age, int Xcoord, int Ycoord){
+    Bear(int energy, int health, int age, Location territoryCenter){
         super(energy, health, age);
         foodType.add(FoodType.meat);
         foodType.add(FoodType.plant);
         strength = 2;
         largeAnimal = true;
-        territoryCenter = new Location(Xcoord, Ycoord);
+        this.territoryCenter = territoryCenter;
+        sleeping = false;
     }
 
     public Set<Location> territory(World world){
@@ -29,6 +31,7 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
         super.act(world);
         if(dead) return;
         if(world.isDay()) dayLogic(world);
+        isSleeping(world);
     }
 
     public void dayLogic(World world){
@@ -65,6 +68,14 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
         prey.takeDamage(strength);
     }
 
+    public void isSleeping(World world){
+        if(world.isNight()){
+            this.sleeping = true;
+        }else{
+            this.sleeping = false;
+        }
+    }
+
     @Override
     public void ageUp() {
         age++;
@@ -77,8 +88,10 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
     @Override
     public DisplayInformation getInformation() {
         if(age >= 3) {
+            if(sleeping){ return new DisplayInformation(Color.red, "bear-sleeping");}
             return new DisplayInformation(Color.red, "bear");
         }
+        if(sleeping){ return new DisplayInformation(Color.red, "bear-small-sleeping");}
         return new DisplayInformation(Color.red, "bear-small");
     }
 
