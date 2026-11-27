@@ -8,13 +8,21 @@ import java.awt.*;
 
 public class Bear extends Animal implements DynamicDisplayInformationProvider{
     private int strength;
+    private Location territoryCenter;
 
-    Bear(int energy, int health, int age){
+    Bear(int energy, int health, int age, int Xcoord, int Ycoord){
         super(energy, health, age);
         foodType.add(FoodType.meat);
         foodType.add(FoodType.plant);
         strength = 2;
         largeAnimal = true;
+        territoryCenter = new Location(Xcoord, Ycoord);
+    }
+
+    public Set<Location> territory(World world){
+        Set<Location> area = world.getSurroundingTiles(territoryCenter, 3);
+        area.add(territoryCenter);
+        return area;
     }
 
     public void act(World world) {
@@ -31,6 +39,11 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
             if(!this.hasEaten) ate = findAndEatFood(world, world.getSurroundingTiles());
             if(!ate) randomMovement(world);
         }
+    }
+
+    @Override
+    protected void randomMovement(World world){
+
     }
 
     public boolean findAndEatFood(World world, Set<Location> neighbours){
@@ -70,7 +83,7 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
     }
 
     public Bear createOffspring(){
-        return new Bear(7, 10, 0);
+        return null; //if going in rut gets added, should be easy enough
     }
 
     public void onAnimalDeath(World world) {
