@@ -3,6 +3,8 @@ import itumulator.world.World;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -42,6 +44,7 @@ public class InputHandler {
                 loopAmount = Integer.parseInt(keyValuePair[1]);
             }
 
+            List<Wolf> cachedWolfPack = new ArrayList<>();
             for (int i = 0; i < loopAmount; i++) {
                 Object spawnedObject;
 
@@ -60,7 +63,13 @@ public class InputHandler {
                     default -> null;
                 };
 
+                if (spawnedObject instanceof Wolf) cachedWolfPack.add((Wolf)spawnedObject);
+
                 w.setTile(location, spawnedObject);
+            }
+
+            for (Wolf wolf : cachedWolfPack) {
+                wolf.setPack(cachedWolfPack);
             }
         }
     }
