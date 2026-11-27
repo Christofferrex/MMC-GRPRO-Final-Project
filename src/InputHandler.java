@@ -30,7 +30,7 @@ public class InputHandler {
         while(scanner.hasNextLine()) {
             String[] keyValuePair = scanner.nextLine().split(" ");
             String[] spawnInterval = keyValuePair[1].split("-");
-            Location territoryCenter;
+            Location territoryCenter = null;
             int loopAmount;
 
             if (keyValuePair.length > 2) {
@@ -58,7 +58,7 @@ public class InputHandler {
                     case "berrybush" -> new BerryBush(1);
                     case "carcass" -> new Carcass(3,false);
                     case "largecarcass" -> new Carcass(6, true);
-//                    case "bear" -> new Bear(territoryCenter);
+                    case "bear" -> new Bear(3, 10, 3, territoryCenter == null ? location : territoryCenter);
                     case "wolf" -> new Wolf(3, 5, 2, false, null);
                     default -> null;
                 };
