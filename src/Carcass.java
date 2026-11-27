@@ -4,6 +4,7 @@ import itumulator.simulator.Actor;
 import itumulator.world.World;
 
 import java.awt.*;
+import java.util.Random;
 
 public class Carcass extends Structure implements Actor, DynamicDisplayInformationProvider {
     private final boolean isLarge;
@@ -45,5 +46,9 @@ public class Carcass extends Structure implements Actor, DynamicDisplayInformati
 
     public void decompose(World world) {
         world.delete(this);
+        if (world.getNonBlocking(world.getCurrentLocation()) != null) return;
+        Grass grass = new Grass(new Random().nextInt(Grass.getMinHealth(), Grass.getMaxHealth()));
+        world.add(grass);
+        world.setTile(world.getCurrentLocation(), grass);
     }
 }

@@ -64,6 +64,24 @@ public class Burrow extends Structure implements NonBlocking {
         return denizens.size() == capacity;
     }
 
+    public boolean reproductionAvailable() {
+        if (rabbitAmount() < 2) return false;
+        int rabbitsReady = 0;
+        List<Rabbit> readyRabbits = new ArrayList<>();
+        for (Rabbit rabbit : rabbits) {
+            if (rabbit != null && !rabbit.getReproducedTonight() && rabbit.age >= 2) {
+                rabbitsReady++;
+                readyRabbits.add(rabbit);
+            }
+        }
+        if (rabbitsReady >= 2) {
+            readyRabbits.get(0).setReproducedTonight(true);
+            readyRabbits.get(1).setReproducedTonight(true);
+            return true;
+        }
+        return false;
+    }
+
     public Location burrowLocation(){
         return location;
     }

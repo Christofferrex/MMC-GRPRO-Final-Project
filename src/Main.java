@@ -14,8 +14,8 @@ public class Main {
         World w = p.getWorld();
 
         p.setDisplayInformation(Grass.class, new DisplayInformation(Color.green, "grass"));
+        p.setDisplayInformation(Burrow.class, new DisplayInformation(Color.green, "rabbit-large"));
         p.setDisplayInformation(Burrow.class, new DisplayInformation(Color.green, "hole-small"));
-        p.setDisplayInformation(Rabbit.class, new DisplayInformation(Color.green, "rabbit-large"));
         p.setDisplayInformation(BerryBush.class, new DisplayInformation(Color.green, "bush"));
         p.setDisplayInformation(Carcass.class, new DisplayInformation(Color.red, "carcass"));
 

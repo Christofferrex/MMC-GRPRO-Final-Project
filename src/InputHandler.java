@@ -28,7 +28,12 @@ public class InputHandler {
         while(scanner.hasNextLine()) {
             String[] keyValuePair = scanner.nextLine().split(" ");
             String[] spawnInterval = keyValuePair[1].split("-");
+            Location territoryCenter;
             int loopAmount;
+
+            if (keyValuePair.length > 2) {
+                territoryCenter = new Location(Integer.parseInt(keyValuePair[2].substring(1,2)), Integer.parseInt(keyValuePair[2].substring(3,4)));
+            }
 
             if (spawnInterval.length > 1) {
                 loopAmount = r.nextInt(Integer.parseInt(spawnInterval[0]), Integer.parseInt(spawnInterval[1]) + 1);
@@ -43,13 +48,15 @@ public class InputHandler {
                 Location location = getRandomEmptyLocation(w);
                 if (location == null) throw new RuntimeException("Spawn Location null");
 
-                spawnedObject = switch (keyValuePair[0]) {
+                spawnedObject = switch (keyValuePair[0].toLowerCase()) {
                     case "grass" -> new Grass(r.nextInt(Grass.getMinHealth(), Grass.getMaxHealth()));
-                    case "rabbit" -> new Rabbit(5, 3, 0, false, null);
+                    case "rabbit" -> new Rabbit(5, 3, 2, false, null);
                     case "burrow" -> new Burrow(5, 3, location.getX(), location.getY());
                     case "berrybush" -> new BerryBush(1);
                     case "carcass" -> new Carcass(3,false);
-                    case "largeCarcass" -> new Carcass(6, true);
+                    case "largecarcass" -> new Carcass(6, true);
+//                    case "bear" -> new Bear(territoryCenter);
+                    case "wolf" -> new Wolf(3, 5, 2);
                     default -> null;
                 };
 

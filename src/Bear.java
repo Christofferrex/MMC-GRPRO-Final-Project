@@ -19,8 +19,17 @@ public class Bear extends Animal{
     public void attack(Animal prey){
         prey.takeDamage(3);
     }
+
     @Override
     public Bear createOffspring(){
         return new Bear(7, 10, 0);
+    }
+
+    public void onAnimalDeath(World world) {
+
+    }
+
+    public Location getLocation(World world) {
+        return null;
     }
 }

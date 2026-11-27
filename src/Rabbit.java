@@ -1,142 +1,168 @@
+import java.awt.*;
+import java.sql.Array;
 import java.util.*;
+import java.util.List;
+
+import itumulator.executable.DisplayInformation;
+import itumulator.executable.DynamicDisplayInformationProvider;
 import itumulator.simulator.*;
 import itumulator.world.*;
 
-public class Rabbit extends Animal {
+public class Rabbit extends Animal implements DynamicDisplayInformationProvider {
     private boolean inBurrow;
     private Burrow burrow;
-    private int timeInWorld;
 
     Rabbit(int energy, int health, int age, boolean inBurrow, Burrow burrow) {
         super(energy, health, age);
         this.inBurrow = inBurrow;
         this.burrow = burrow;
         foodType.add(FoodType.plant);
+        largeAnimal = false;
+    }
+
+    public Rabbit createOffspring() {
+        return new Rabbit(5, 3, 0, true, burrow);
+    }
+
+    public void onAnimalDeath(World world) {
+        if (burrow != null) {
+            burrow.removeDenizen(this);
+            burrow.rabbitLeaving(this);
+        }
+    }
+
+    public Location getLocation(World world) {
+        return !inBurrow && world.contains(this) ? world.getLocation(this) : burrow.burrowLocation();
     }
 
     public void act(World world) {
-        //rabbits random movementS
-        Set<Location> neighbours;
-        Location rabbitLocation = world.isOnTile(this) ? world.getLocation(this) : burrow.burrowLocation();
-        timeInWorld++;
+        super.act(world);
+        if (dead) return;
+        if (world.isDay()) dayLogic(world);
+        else if (world.isNight()) nightLogic(world);
+    }
 
-        if (timeInWorld % 20 == 0) {
-            if (!this.hasEaten) {
-                this.starve();
-            }
-            this.ageUp();
-            this.setHasEaten();
+    @Override
+    public DisplayInformation getInformation() {
+        if (age >= 2) {
+            return new DisplayInformation(Color.blue, "rabbit-large");
         }
+        return new DisplayInformation(Color.blue, "rabbit-small");
+    }
 
-        if (health <= 0 || energy <= 0) {
-            world.delete(this);
-            if (burrow != null) burrow.removeDenizen(this);
-            Carcass rabbitCarcass = new Carcass(3, false);
-            world.add(rabbitCarcass);
-            world.setTile(rabbitLocation, rabbitCarcass);
-        }
-
-        if (world.isDay()) {
-            //leaves a burrow if the rabbit is in one and its day
-            if (inBurrow) {
-                this.leaveBurrow(world);
-                if (inBurrow) return;
-                if (!burrow.isDenizen(this)) {
-                    burrow = null;
-                }
-            }
-
-            if (!world.contains(this)) return;
-
-            for (int currentEnergy = energy; currentEnergy > 0; currentEnergy--) {
-                neighbours = world.getEmptySurroundingTiles();
-                boolean ate = false;
-
-                //make the rabbit eat
-                if (!this.hasEaten) {
-                    for (Location neighbour : neighbours) {
-                        if (world.containsNonBlocking(neighbour) && world.getTile(neighbour) instanceof NonBlocking) {
-                            world.move(this, neighbour);
-                            if (world.getNonBlocking(neighbour) instanceof Structure structure && foodType.contains(structure.getFoodType())) {
-                                structure.damageStructure(1, world);
-                                this.eat();
-                                ate = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (!ate) {
-                    List<Location> listOfNeighbours = new ArrayList<>(neighbours);
-                    if (!listOfNeighbours.isEmpty() && world.contains(this)) {
-                        world.move(this, listOfNeighbours.get(r.nextInt(0, listOfNeighbours.size())));
-                    }
-                }
+    private void dayLogic(World world) {
+        //leaves it's burrow if the rabbit is in one
+        if (inBurrow) {
+            this.leaveBurrow(world);
+            if (inBurrow) return;
+            if (!burrow.isDenizen(this)) {
+                burrow = null;
             }
         }
 
-        //rabbits movement towards burrow at night
-        if (world.isNight()) {
-            if (!inBurrow && burrow != null) {
-                rabbitLocation = world.getLocation(this);
-                Location burrowLocation = burrow.burrowLocation();
-                int xDiff = burrowLocation.getX() - rabbitLocation.getX();
-                int yDiff = burrowLocation.getY() - rabbitLocation.getY();
-                int xMovement = 0;
-                int yMovement = 0;
+        //Ensures rabbit is in the world
+        if (!world.contains(this)) return;
 
-                if (xDiff != 0) {
-                    xMovement = xDiff < 0 ? -1 : 1;
+        boolean ate = false;
+        for (int currentEnergy = energy == 0 ? 1 : energy; currentEnergy > 0; currentEnergy--) {
+            if (!this.hasEaten) ate = findAndEatFood(world, world.getEmptySurroundingTiles());
+            if (!ate) randomMovement(world);
+        }
+    }
+
+    private void nightLogic(World world) {
+        if (!inBurrow && burrow != null) { //Pathfind towards Burrow
+            Location direction = pathfindToBurrow(world);
+            Object potentialObstacle = world.getTile(direction);
+            if (potentialObstacle == null || potentialObstacle instanceof NonBlocking) {
+                world.move(this, direction);
+            }
+        } else if (burrow == null) { //Find or create Burrow
+            searchForAndJoinBurrow(world, 3);
+            if (burrow == null) this.digBurrow(world);
+        }
+
+        //enters a burrow if the rabbit is on top of one and its night
+        if (!inBurrow && burrow != null) {
+            Set<Location> surroundingTiles = world.getSurroundingTiles();
+            for (Location location : surroundingTiles) {
+                if (world.getNonBlocking(location) == burrow) {
+                    this.enterBurrow(world);
+                    break;
                 }
+            }
+        } else if (inBurrow) { //Rabbit breeds in Burrow
+            if (burrow.reproductionAvailable()) {
+                Rabbit baby = this.createOffspring();
+                world.add(baby);
+                burrow.addDenizen(baby);
+                burrow.rabbitEntering(baby);
+            }
+        }
+    }
 
-                if (yDiff != 0) {
-                    yMovement = yDiff < 0 ? -1 : 1;
+    private boolean findAndEatFood(World world, Set<Location> neighbours) {
+        for (Location neighbour : neighbours) {
+            if (world.containsNonBlocking(neighbour) && world.getTile(neighbour) instanceof NonBlocking) {
+                world.move(this, neighbour);
+                if (world.getNonBlocking(neighbour) instanceof Structure structure && foodType.contains(structure.getFoodType())) {
+                    structure.damageStructure(1, world);
+                    this.eat();
+                    return true;
                 }
+            }
+        }
+        return false;
+    }
 
-                Location direction = new Location(rabbitLocation.getX() + xMovement, rabbitLocation.getY() + yMovement);
+    private Location pathfindToBurrow(World world) {
+        Location rabbitLocation = getLocation(world);
+        Location burrowLocation = burrow.burrowLocation();
+        int xDiff = burrowLocation.getX() - rabbitLocation.getX();
+        int yDiff = burrowLocation.getY() - rabbitLocation.getY();
+        int xMovement = 0;
+        int yMovement = 0;
 
-                Object obstacle = world.getTile(direction);
-                if (obstacle != null && !(obstacle instanceof NonBlocking)) {
-                    Set<Location> nearbyBlocker = world.getSurroundingTiles(direction);
-                    Set<Location> nearbyRabbit = world.getSurroundingTiles(rabbitLocation);
-                    Set<Location> intersection = new HashSet<>(nearbyBlocker);
-                    intersection.retainAll(nearbyRabbit);
+        if (xDiff != 0) {
+            xMovement = xDiff < 0 ? -1 : 1;
+        }
 
-                    for (Location tile : intersection) {
-                        if (world.getTile(tile) == null) {
-                            direction = tile;
-                            break;
-                        }
-                    }
-                }
+        if (yDiff != 0) {
+            yMovement = yDiff < 0 ? -1 : 1;
+        }
 
-                obstacle = world.getTile(direction);
+        Location direction = new Location(rabbitLocation.getX() + xMovement, rabbitLocation.getY() + yMovement);
+
+        Object obstacle = world.getTile(direction);
+        if (obstacle != null && !(obstacle instanceof NonBlocking)) {
+            Set<Location> nearbyBlocker = world.getSurroundingTiles(direction);
+            Set<Location> nearbyRabbit = world.getSurroundingTiles(rabbitLocation);
+            Set<Location> intersection = new HashSet<>(nearbyBlocker);
+            intersection.retainAll(nearbyRabbit);
+
+            List<Location> intersectionList = new ArrayList<>(intersection);
+
+            int loopAmount = intersectionList.size();
+            for (int i = 0; i < loopAmount; i++) {
+                Location location = intersectionList.get(r.nextInt(0, intersectionList.size()));
+                obstacle = world.getTile(location);
                 if (obstacle == null || obstacle instanceof NonBlocking) {
-                    world.move(this, direction);
+                    return location;
                 }
-            } else if (burrow == null) {
-                Set<Location> surroundingTiles = world.getSurroundingTiles(3);
-                for (Location location : surroundingTiles) {
-                    if (world.getNonBlocking(location) instanceof Burrow foundBurrow && !foundBurrow.atFullCapacity()) {
-                        burrow = foundBurrow;
-                        break;
-                    }
-                }
-
-                if (burrow == null) this.digBurrow(world);
+                intersectionList.remove(location);
             }
+        }
 
-            //enters a burrow if the rabbit is on top of one and its night
-            if (!inBurrow && burrow != null && world.getNonBlocking(rabbitLocation) == burrow) {
-                this.enterBurrow(world);
-            } else if (inBurrow) {
-                if (!burrow.isFull() && burrow.rabbitAmount() >= 2) {
-                    Rabbit baby = this.createOffspring();
-                    world.add(baby);
-                    burrow.addDenizen(baby);
-                    burrow.rabbitEntering(baby);
-                }
+        return direction;
+    }
+
+    public void searchForAndJoinBurrow(World world, int searchRadius) {
+        Set<Location> surroundingTiles = world.getSurroundingTiles(searchRadius);
+        for (Location location : surroundingTiles) {
+            if (world.getNonBlocking(location) instanceof Burrow foundBurrow && !foundBurrow.atFullCapacity()) {
+                burrow = foundBurrow;
+                burrow.addDenizen(this);
+                break;
             }
         }
     }
@@ -163,9 +189,11 @@ public class Rabbit extends Animal {
 
     //code for when the rabbit leaves a burrow
     public void leaveBurrow(World world) {
-        if (world.getTile(burrow.burrowLocation()) != burrow) return;
-        world.setTile(burrow.burrowLocation(), this);
-        world.setCurrentLocation(burrow.burrowLocation());
+        List<Location> emptySurroundings = new ArrayList<>(world.getEmptySurroundingTiles(burrow.burrowLocation()));
+        if (emptySurroundings.isEmpty()) return;
+        Location targetLocation = emptySurroundings.get(r.nextInt(0, emptySurroundings.size()));
+        world.setTile(targetLocation, this);
+        world.setCurrentLocation(targetLocation);
         inBurrow = false;
         burrow.rabbitLeaving(this);
     }
@@ -178,10 +206,5 @@ public class Rabbit extends Animal {
     //get the rabbits health
     public int getHealth() {
         return health;
-    }
-
-    @Override
-    public Rabbit createOffspring() {
-        return new Rabbit(5, 3, 0, true, burrow);
     }
 }
