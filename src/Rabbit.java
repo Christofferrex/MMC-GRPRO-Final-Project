@@ -63,8 +63,8 @@ public class Rabbit extends Animal implements DynamicDisplayInformationProvider 
         //Ensures rabbit is in the world
         if (!world.contains(this)) return;
 
-        boolean ate = false;
         for (int currentEnergy = energy == 0 ? 1 : energy; currentEnergy > 0; currentEnergy--) {
+            boolean ate = false;
             if (!this.hasEaten) ate = findAndEatFood(world, world.getEmptySurroundingTiles());
             if (!ate) randomMovement(world);
         }
