@@ -54,12 +54,12 @@ public class InputHandler {
                 spawnedObject = switch (keyValuePair[0].toLowerCase()) {
                     case "grass" -> new Grass(r.nextInt(Grass.getMinHealth(), Grass.getMaxHealth()));
                     case "rabbit" -> new Rabbit(5, 3, 2, false, null);
-                    case "burrow" -> new Burrow(5, 3, location.getX(), location.getY());
+                    case "burrow" -> new Burrow(3, 5, location);
                     case "berrybush" -> new BerryBush(1);
                     case "carcass" -> new Carcass(3,false);
                     case "largecarcass" -> new Carcass(6, true);
                     case "bear" -> new Bear(3, 10, 3, territoryCenter == null ? location : territoryCenter);
-                    case "wolf" -> new Wolf(3, 5, 2);
+                    case "wolf" -> new Wolf(3, 5, 2, false, null);
                     default -> null;
                 };
 

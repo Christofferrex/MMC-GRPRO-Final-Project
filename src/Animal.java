@@ -115,4 +115,52 @@ public abstract class Animal implements Actor {
     public boolean getReproducedTonight() {
         return reproducedTonight;
     }
+
+    protected void moveTowards(World world, Location targetLocation) {
+        Location direction = pathfindToLocation(world, targetLocation);
+        Object potentialObstacle = world.getTile(direction);
+        if (potentialObstacle == null || potentialObstacle instanceof NonBlocking) {
+            world.move(this, direction);
+        }
+    }
+
+    protected Location pathfindToLocation(World world, Location targetLocation) {
+        Location currentLocation = getLocation(world);
+        int xDiff = targetLocation.getX() - currentLocation.getX();
+        int yDiff = targetLocation.getY() - currentLocation.getY();
+        int xMovement = 0;
+        int yMovement = 0;
+
+        if (xDiff != 0) {
+            xMovement = xDiff < 0 ? -1 : 1;
+        }
+
+        if (yDiff != 0) {
+            yMovement = yDiff < 0 ? -1 : 1;
+        }
+
+        Location direction = new Location(currentLocation.getX() + xMovement, currentLocation.getY() + yMovement);
+
+        Object obstacle = world.getTile(direction);
+        if (obstacle != null && !(obstacle instanceof NonBlocking)) {
+            Set<Location> nearbyBlocker = world.getSurroundingTiles(direction);
+            Set<Location> nearbyAnimal = world.getSurroundingTiles(currentLocation);
+            Set<Location> intersection = new HashSet<>(nearbyBlocker);
+            intersection.retainAll(nearbyAnimal);
+
+            List<Location> intersectionList = new ArrayList<>(intersection);
+
+            int loopAmount = intersectionList.size();
+            for (int i = 0; i < loopAmount; i++) {
+                Location location = intersectionList.get(r.nextInt(0, intersectionList.size()));
+                obstacle = world.getTile(location);
+                if (obstacle == null || obstacle instanceof NonBlocking) {
+                    return location;
+                }
+                intersectionList.remove(location);
+            }
+        }
+
+        return direction;
+    }
 }
