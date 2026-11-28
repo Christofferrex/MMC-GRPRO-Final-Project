@@ -11,6 +11,7 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
     private int strength;
     private Location territoryCenter;
     private boolean sleeping;
+    private Location preyLocation;
 
     Bear(int energy, int health, int age, Location territoryCenter){
         super(energy, health, age);
@@ -20,6 +21,8 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
         largeAnimal = true;
         this.territoryCenter = territoryCenter;
         sleeping = false;
+        preyLocation = null;
+
     }
 
     public Set<Location> territory(World world){
@@ -33,15 +36,19 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
         if(dead) return;
         if(world.isDay()) dayLogic(world);
         isSleeping(world);
+
     }
 
     public void dayLogic(World world){
         if(!world.contains(this)) return;
 
         boolean ate = false;
-        for(int currentEnergy = energy == 0 ? 1 : energy; currentEnergy > 0; currentEnergy--){
-            if(!this.hasEaten) ate = findAndEatFood(world, world.getSurroundingTiles());
-            if(!ate) randomMovement(world);
+        if(isHunting(world, territory(world))){
+            hunt(world);
+        }else{for (int currentEnergy = energy == 0 ? 1 : energy; currentEnergy > 0; currentEnergy--) {
+                if (!this.hasEaten) ate = findAndEatFood(world, world.getSurroundingTiles());
+                if (!ate) randomMovement(world);
+            }
         }
     }
 
@@ -71,10 +78,23 @@ public class Bear extends Animal implements DynamicDisplayInformationProvider{
         return false;
     }
 
-    public void attack(){
-        //prey.takeDamage(strength);
-        //for()
-        //if(nearbyAnimal instanceof Animal prey && prey != this);
+    public boolean isHunting(World world, Set<Location> territory){
+        for(Location plot : territory){
+            if(world.getTile(plot) instanceof Animal prey && prey != this){
+                preyLocation = prey.getLocation(world);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void hunt(World world) {
+        moveTowards(world, preyLocation);
+        for (Location neighbour : world.getSurroundingTiles()) {
+            if (world.getTile(neighbour) instanceof Animal prey && prey != this) {
+                prey.takeDamage(strength);
+            }
+        }
     }
 
     public void isSleeping(World world){

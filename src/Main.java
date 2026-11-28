@@ -8,7 +8,7 @@ import itumulator.world.World;
 public class Main {
 
     public static void main(String[] args) {
-        InputHandler ir = new InputHandler(new File("resources/data/Tema2/t2-4a.txt"));
+        InputHandler ir = new InputHandler(new File("resources/data/Tema2/tf2-4.txt"));
 
         Program p = new Program(ir.getWorldSize(), 800, 75);
         World w = p.getWorld();
